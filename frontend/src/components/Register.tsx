@@ -15,14 +15,13 @@ const Register: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      setError('Email и пароль обязательны');
+      setError('Email and password required');
       return;
     }
     setLoading(true);
     setError(null);
     const result = await dispatch(register({ email, password }));
     if (register.fulfilled.match(result)) {
-      // Успех: token/user в state, можно redirect или alert('Registered!').
       console.log('Registered successfully');
     } else {
       setError(result.payload as string || 'Registration failed');
@@ -32,7 +31,7 @@ const Register: React.FC = () => {
 
   return (
     <form onSubmit={handleSubmit} style={{ maxWidth: '300px', margin: '0 auto', padding: '1rem' }}>
-      <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>Регистрация</h2>
+      <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>Register</h2>
       {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
       <input 
         type="email" 
@@ -55,7 +54,7 @@ const Register: React.FC = () => {
         disabled={loading} 
         style={{ padding: '0.75rem', width: '100%', background: '#4299e1', color: 'white', border: 'none', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer' }}
       >
-        {loading ? 'Регистрация...' : 'Зарегистрироваться'}
+        {loading ? 'Registering...' : 'Register'}
       </button>
     </form>
   );

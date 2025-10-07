@@ -1,10 +1,10 @@
-// src/store/taskSlice.ts — async thunks для API, без дубликатов экспорта.
+// src/store/taskSlice.ts — async thunks for API, no duplicate exports.
 
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 export interface Task {
-  id: string;  // String = _id from backend (уникальный).
+  id: string;  // String = _id from backend (unique).
   text: string;
   done: boolean;
 }
@@ -21,8 +21,8 @@ const initialState: TaskState = {
   error: null,
 };
 
-// Async thunk для GET /tasks (загрузка из DB).
-export const fetchTasks = createAsyncThunk(  // Уже экспортирован здесь!
+// Async thunk for GET /tasks (load from DB).
+export const fetchTasks = createAsyncThunk(
   'tasks/fetchTasks',
   async (_, { rejectWithValue }) => {
     try {
@@ -34,8 +34,8 @@ export const fetchTasks = createAsyncThunk(  // Уже экспортирова�
   }
 );
 
-// Async thunk для POST /tasks (добавление).
-export const addTaskAsync = createAsyncThunk(  // Уже экспортирован здесь!
+// Async thunk for POST /tasks (add).
+export const addTaskAsync = createAsyncThunk(
   'tasks/addTaskAsync',
   async (taskData: Omit<Task, 'id'>, { rejectWithValue }) => {
     try {
@@ -43,6 +43,32 @@ export const addTaskAsync = createAsyncThunk(  // Уже экспортиров�
       return { ...response.data, id: response.data._id };  // id = _id string.
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.error || 'Add failed');
+    }
+  }
+);
+
+// Async thunk for DELETE /tasks/:id (delete from DB).
+export const deleteTask = createAsyncThunk(
+  'tasks/deleteTask',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const response = await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/tasks/${id}`);
+      return id;  // Return id to remove from state.
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data?.error || 'Delete failed');
+    }
+  }
+);
+
+// Async thunk for NLP parsing (/ai/parse).
+export const parseTask = createAsyncThunk(
+  'tasks/parseTask',
+  async (text: string, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/ai/parse`, { text });
+      return { ...response.data, id: response.data._id };  // id = _id.
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data?.error || 'Parse failed');
     }
   }
 );
@@ -55,9 +81,6 @@ const taskSlice = createSlice({
     toggleTask: (state, action: PayloadAction<string>) => {  // id: string.
       const task = state.tasks.find(t => t.id === action.payload);
       if (task) task.done = !task.done;
-    },
-    removeTask: (state, action: PayloadAction<string>) => {  // id: string.
-      state.tasks = state.tasks.filter(t => t.id !== action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -87,10 +110,36 @@ const taskSlice = createSlice({
       .addCase(addTaskAsync.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      // Delete handling.
+      .addCase(deleteTask.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteTask.fulfilled, (state, action: PayloadAction<string>) => {
+        state.loading = false;
+        state.tasks = state.tasks.filter(t => t.id !== action.payload);  // Remove from state.
+      })
+      .addCase(deleteTask.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Parse handling.
+      .addCase(parseTask.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(parseTask.fulfilled, (state, action: PayloadAction<Task>) => {
+        state.loading = false;
+        state.tasks.push(action.payload);
+      })
+      .addCase(parseTask.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });
 
-// Экспорт только локальных actions (thunks уже экспортированы выше).
-export const { toggleTask, removeTask } = taskSlice.actions;
+export const { toggleTask } = taskSlice.actions;
+// No duplicate export for thunks — they are already named exports.
 export default taskSlice.reducer;

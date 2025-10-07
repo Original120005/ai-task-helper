@@ -9,13 +9,14 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:3001' }));  // Уточнил origin для FE на 3001.
+app.use(cors({ origin: 'http://localhost:3001' }));  // Для FE на 3001.
 app.use(express.json());
 
-// Routes — подключи здесь!
+// Routes
 app.get('/', (req, res) => res.send('Backend AI Task Helper running!'));
-app.use('/tasks', require('./routes/tasks'));  // <-- Это строка — если нет, добавь!
+app.use('/tasks', require('./routes/tasks'));
 app.use('/auth', require('./routes/auth'));
+app.use('/ai', require('./routes/ai'));  // <-- Добавь эту строку для NLP!
 
 // Mongo connect
 mongoose.connect(process.env.MONGO_URI)

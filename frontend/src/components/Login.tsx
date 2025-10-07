@@ -15,7 +15,7 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      setError('Email и пароль обязательны');
+      setError('Email and password required');
       return;
     }
     setLoading(true);
@@ -31,7 +31,7 @@ const Login: React.FC = () => {
 
   return (
     <form onSubmit={handleSubmit} style={{ maxWidth: '300px', margin: '0 auto', padding: '1rem' }}>
-      <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>Вход</h2>
+      <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>Login</h2>
       {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
       <input 
         type="email" 
@@ -54,7 +54,7 @@ const Login: React.FC = () => {
         disabled={loading} 
         style={{ padding: '0.75rem', width: '100%', background: '#4299e1', color: 'white', border: 'none', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer' }}
       >
-        {loading ? 'Вход...' : 'Войти'}
+        {loading ? 'Logging in...' : 'Login'}
       </button>
     </form>
   );
